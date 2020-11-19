@@ -106,16 +106,16 @@ while True:
         #Verificar si tienen tiempo pendiente en el estado actual, sino cambiar
         if(productor.time < 1 ):
             productor.estado_exp = random.choice(estados)
-        else if(productor.estado != "Esperando"):
+        elif(productor.estado != "Esperando"):
             productor.time -= 1
             
         if(consumidor.time < 1 ):
             consumidor.estado_exp = random.choice(estados)
-        else if(consumidor.estado != "Esperando"):
+        elif(consumidor.estado != "Esperando"):
             consumidor.time -= 1
             
         #Verificar si alguno está trabajando en este momento
-        if(semaforo = False): #Ninguno trabajando
+        if(semaforo == False): #Ninguno trabajando
             #Decidir cual de los dos entrará primero
             if(productor.estado_exp == consumidor.estado_exp == "Trabajando"): #Si ambos quieren trabajar
                 if(random.choice(procesos) == "Productor" and checkProdAvailable()):
@@ -127,9 +127,12 @@ while True:
                     consOn = True
                     productor.estado = "Esperando"
                     
-                productor.time = randrange(3, 11, 1)
-                consumidor.time = randrange(3, 11, 1)
-            else if():
+                productor.time = random.randrange(3, 11, 1)
+                consumidor.time = random.randrange(3, 11, 1)
+            elif(): #Si uno quiere trabajar y el otro dormir
+                print(":0")
+            elif(): #Si ambos quieren dormir
+                print(":0")
                 
         
         print("Productor: ", productor.estado_exp, " -> ", productor.estado, "[", productor.time,"]", "\nConsumidor: ", consumidor.estado_exp, " -> ", consumidor.estado, "[", consumidor.time, "]", "\n")
