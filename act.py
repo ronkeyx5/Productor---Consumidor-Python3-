@@ -114,18 +114,26 @@ while True:
         #INIT - Estado inicial
         #DURMIENDO - Sin hacer nada
         
+        #Checar si alguno terminó 
+        #if(productor.estado == "Trabajando" and productor.time == 0):
+            
+        
         #Si wait activo entonces proceso debe de ESPERAR
         if(wait_prod == False and productor.time > 0): #Si aun tiene tiempo y puede trabajar o dormir
             productor.time -= 1
         elif(wait_prod == False and productor.time < 1): #Si terminó su trabajo o sueño
             productor.estado = "Eligiendo"
             productor.estado_exp = random.choice(estados)
+            wait_cons = False
+            semaforo = False
         
         if(wait_cons == False and consumidor.time > 0):
             consumidor.time -= 1
         elif(wait_cons == False and consumidor.time < 1):
             consumidor.estado = "Eligiendo"
             consumidor.estado_exp = random.choice(estados)
+            wait_prod = False
+            semaforo = False
             
         #Definicion de estados
         if(semaforo == False):
@@ -144,16 +152,21 @@ while True:
                     
                 productor.time = random.randrange(3, 11, 1)
                 consumidor.time = random.randrange(3, 11, 1)
-            
+        
+        #TRABAJANDO - PRINCIPAL
         if(productor.estado == "Trabajando" and checkProdAvailable()):
             producir(productor.pos)
             if(productor.pos < 29):
                 productor.pos += 1
             else:
                 productor.pos = 0
+        else:
+            wait_prod = True
+            wait_cons = False
+            semaforo = False
                 
         if(consumidor.estado == "Trabajando" and checkConsAvailable()):
-            consumidor(consumidor.pos)
+            consumir(consumidor.pos)
             if(consumidor.pos < 29):
                 consumidor.pos += 1
             else:
