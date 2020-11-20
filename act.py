@@ -73,14 +73,20 @@ def checkProdAvailable():
     #    return True
     #else:
     #    return False
-    return buffer[productor.pos] == "__"        
+    if(buffer[productor.pos] == "__"):
+        return True
+    else:
+        return False
     
 def checkConsAvailable():
     #if("&&" in buffer):
     #    return True
     #else:
     #    return False
-    return buffer[consumidor.pos] == "&&"
+    if(buffer[consumidor.pos] == "&&"):
+        return True
+    else:
+        return False
 
 #Llena el buffer de espacios vacios "_"
 bufferClean()
@@ -92,11 +98,11 @@ bufferClean()
 ############
 # MainLoop #
 ############
-os.system('mode con: cols=120 lines=30')
+#os.system('mode con: cols=120 lines=30')
 ciclo = 0
 
 while True:
-    time.sleep(0.75)
+    time.sleep(.1)
 
     if(keyboard.is_pressed('ESC')):
         print("\n\nTerminando...")
@@ -124,56 +130,161 @@ while True:
         elif(wait_prod == False and productor.time < 1): #Si terminó su trabajo o sueño
             productor.estado = "Eligiendo"
             productor.estado_exp = random.choice(estados)
-            wait_cons = False
+            #wait_cons = False
             semaforo = False
         
         if(wait_cons == False and consumidor.time > 0):
             consumidor.time -= 1
-        elif(wait_cons == False and consumidor.time < 1):
+        elif(consumidor.estado != "Esperando" and consumidor.time < 1):
             consumidor.estado = "Eligiendo"
             consumidor.estado_exp = random.choice(estados)
-            wait_prod = False
+            #wait_prod = False
             semaforo = False
             
         #Definicion de estados
         if(semaforo == False):
-            if(productor.estado_exp == consumidor.estado_exp == "Trabajando"):
-                print("f")
+            if(productor.estado_exp == consumidor.estado_exp == "Trabajando"): #Ambos quieren trabajar
+                print("Sem OFF - Ambos")
                 if(checkProdAvailable()): #Si puede entrar productor
                     productor.estado = "Trabajando"
                     consumidor.estado = "Esperando"
                     wait_cons = True
                     semaforo = True
+                    productor.estado_exp = "!"
+                    consumidor.estado_exp = "!"
+                    productor.time = random.randrange(3, 11, 1)
+                    consumidor.time = random.randrange(3, 11, 1)
                 elif(checkConsAvailable()): #Si puede entrar consumidor
                     productor.estado = "Esperando"
                     consumidor.estado = "Trabajando"
                     wait_prod = True
                     semaforo = True
+                    consumidor.estado_exp = "!"
+                    productor.estado_exp = "!"
+                    productor.time = random.randrange(3, 11, 1)
+                    consumidor.time = random.randrange(3, 11, 1)
+            
+            #Uno quiere trabajar, otro dormir
+            if((productor.estado_exp == "Durmiendo" and consumidor.estado_exp == "Trabajando") or (productor.estado_exp == "Trabajando" and consumidor.estado_exp == "Durmiendo")):
+                print("Sem OFF - uno y uno")
+                if(productor.estado_exp == "Trabajando"):
+                    productor.estado_exp = "!"
+                    consumidor.estado_exp = "!"
+                    productor.estado = "Trabajando"
+                    consumidor.estado = "Durmiendo"
+                    #wait_cons = True
+                    semaforo = True
+                    productor.time = random.randrange(3, 11, 1)
+                    consumidor.time = random.randrange(3, 11, 1)
+                elif(consumidor.estado_exp == "Trabajando"):
+                    productor.estado_exp = "!"
+                    consumidor.estado_exp = "!"
+                    productor.estado = "Durmiendo"
+                    consumidor.estado = "Trabajando"
+                    #wait_prod = True
+                    semaforo = True
+                    productor.time = random.randrange(3, 11, 1)
+                    consumidor.time = random.randrange(3, 11, 1)
                     
+            #Ambos quieren dormir
+            if(productor.estado_exp == "Durmiendo" == consumidor.estado_exp):
+                print("Sem OFF - Ninguno")
+                wait_cons = False
+                wait_prod = False
+                semaforo = False
+                productor.estado_exp = "!"
+                consumidor.estado_exp = "!"
+                productor.estado = "Durmiendo"
+                consumidor.estado = "Durmiendo"
                 productor.time = random.randrange(3, 11, 1)
+                consumidor.time = random.randrange(3, 11, 1)
+                
+            #Uno durmiendo, el otro quiere dormir
+            if(productor.estado_exp == "Durmiendo" or consumidor.estado_exp == "Durmiendo"):
+                if(productor.estado_exp == "Durmiendo"):
+                    productor.estado_exp = "!"
+                    productor.estado = "Durmiendo"
+                    productor.time = random.randrange(3, 11, 1)
+                elif(consumidor.estado_exp == "Durmiendo"):
+                    consumidor.estado_exp = "!"
+                    consumidor.estado = "Durmiendo"
+                    consumidor.time = random.randrange(3, 11, 1)
+            
+            #Uno Esperando, el otro quiere trabajar
+            if(productor.estado == "Esperando" and consumidor.estado_exp == "Trabajando") or (productor.estado_exp == "Trabajando" and consumidor.estado == "Esperando"):
+                if(productor.estado_exp == "Trabajando" and checkProdAvailable() == True):
+                    productor.estado_exp ="!"
+                    productor.estado = "Trabajando"
+                    semaforo = True
+                    productor.time = random.randrange(3, 11, 1)
+                elif(consumidor.estado_exp == "Trabajando" and checkConsAvailable() == True):
+                    consumidor.estado_exp = "!"
+                    consumidor.estado = "Trabajando"
+                    semaforo = True
+                    consumidor.time = random.randrange(3, 11, 1)
+            
+        elif(semaforo == True):
+            #Uno trabajando, el otro quiere trabajar
+            #Uno trabajando, el otro quiere dormir
+            if(productor.estado_exp == "Trabajando"): #Poner a esperar
+                print("Sem ON - Prod quiere trabajar")
+                productor.estado_exp = "!"
+                productor.estado = "Esperando"
+                productor.time = random.randrange(3, 11, 1)
+            elif(productor.estado_exp == "Durmiendo"):
+                print("Sem ON - Prod quiere dormir")
+                productor.estado_exp = "!"
+                productor.estado = "Durmiendo"
+                wait_prod = False
+                productor.time = random.randrange(3, 11, 1)
+                
+            if(consumidor.estado_exp == "Trabajando"):
+                print("Sem ON - Cons quiere trabajar")
+                consumidor.estado_exp = "!"
+                consumidor.estado = "Esperando"
+                consumidor.time = random.randrange(3, 11, 1)
+            elif(consumidor.estado_exp == "Durmiendo"):
+                print("Sem ON - Cons quiere dormir")
+                consumidor.estado_exp = "!"
+                consumidor.estado = "Durmiendo"
+                wait_cons = False
                 consumidor.time = random.randrange(3, 11, 1)
         
         #TRABAJANDO - PRINCIPAL
-        if(productor.estado == "Trabajando" and checkProdAvailable()):
+        if(productor.estado == "Trabajando" and checkProdAvailable() == True and wait_prod == False):
             producir(productor.pos)
             if(productor.pos < 29):
                 productor.pos += 1
             else:
                 productor.pos = 0
-        else:
+        elif(productor.estado == "Trabajando" and checkProdAvailable() == False):
             wait_prod = True
             wait_cons = False
-            semaforo = False
+            productor.estado = "Esperando"
+            if(consumidor.estado == "Esperando" and checkConsAvailable()):
+                consumidor.estado = "Trabajando"
+                consumidor.time += 1
+            else:
+                semaforo = False
                 
-        if(consumidor.estado == "Trabajando" and checkConsAvailable()):
+        if(consumidor.estado == "Trabajando" and checkConsAvailable() == True and wait_cons == False):
             consumir(consumidor.pos)
             if(consumidor.pos < 29):
                 consumidor.pos += 1
             else:
                 consumidor.pos = 0
+        elif(consumidor.estado == "Trabajando" and checkConsAvailable() == False):
+            wait_prod = False
+            wait_cons = True
+            consumidor.estado = "Esperando"
+            if(productor.estado == "Esperando" and checkProdAvailable()):
+                productor.estado = "Trabajando"
+                productor.time += 1
+            else:
+                semaforo = False
         
-        print("Productor: ", productor.estado, "[", productor.time,"]", "POS: ", productor.pos, "\nConsumidor: ", consumidor.estado, "[", consumidor.time, "]", "POS: ", consumidor.pos,"\n")
+        print("semaforo:", semaforo, "\nwait_prod:", wait_prod, "    wait_cons:", wait_cons, "\n\nProductor: ", productor.estado, "[", productor.time,"]", "POS: ", productor.pos, "\nConsumidor: ", consumidor.estado, "[", consumidor.time, "]", "POS: ", consumidor.pos,"\n")
         
-        ciclo += 1
+        ciclo += 1 
         #Main
         printBuffer()
